@@ -6,7 +6,7 @@ from images.models import Image
 
 # Register your models here.
 class ImageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'image', 'model_3D', 'kp', 'des')
+    list_display = ('id', 'image', 'model_3D')
     ordering = ('-id', )
 
 
