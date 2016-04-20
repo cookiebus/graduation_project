@@ -1,5 +1,16 @@
-{% for image in images %}
-<img src="/media/{{image.image}}"></br>
-kp : {{image.kp}}</br></br>
-des: {{image.des}}</br></br>
-{% endfor %}
+<form enctype="multipart/form-data" action="/images/compute/" method="post" id="images_id">
+{% csrf_token %}
+    <div class="form-row field-title">
+        <div>
+            <label class="required">Image:</label>
+            <input id="image_id" name="image" type="file" />  
+        </div>
+    </div>
+    <div class="submit-row">
+        <input type="submit" value="Submit" class="default" name="_save" />
+    </div>
+</form>
+</br>
+{% if link %}
+<img src="{{link}}"/>
+{% endif %}

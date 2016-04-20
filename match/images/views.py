@@ -1,18 +1,21 @@
+from django.conf import settings
 from django.shortcuts import render
-import cv2
-import json
+from datetime import datetime
+from images.models import Image
+
 
 # Create your views here.
 def compute(request):
-    images = Image.objects.all()
-    sift = cv2.xfeatures2d.SIFT_create()
+    if request.method != "POST":
+        return render(request, "images/compute.html", locals())
 
-    for image in images:
-        if not image.kp and not image.des:
-            img = imread(image.image.url)
-            kp, des = sift.detectAndCompute(img, None)
-            image.kp = json.dumps(kp)
-            image.des = json.dumps(des)
-            image.save()
+    if 'image' in request.FILES:
+        img_obj = request.FILES.get('image')
+        img_name = 'temp/temp_file-%d.jpg' % datetime.now()
+        img_full_path = os.path.join(settings.MEDIA_ROOT, img_name)
+        dest = open(img_full_path, 'w')
+        dest.write(img_obj.read())
+        dest.close()
 
+    link = ImageService.get_target(img_full_path)
     return render(request, "images/compute.html", locals())
