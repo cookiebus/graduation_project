@@ -1,7 +1,6 @@
 from django.db import models
 from jsonfield import JSONField
-import cv2
-import json
+
 
 # Create your models here.
 class Image(models.Model):
