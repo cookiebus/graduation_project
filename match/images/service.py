@@ -12,11 +12,17 @@ class ImageService(object):
     @classmethod
     def get_target(cls, img_path):
         sift = cv2.xfeatures2d.SIFT_create()
-        img = cv2.imread(img_path)
-        kp, des = sift.detectAndCompute(img, None)
-        print kp
-        print des
-        return Image.objects.all()[0].image.url
+        img1 = cv2.imread(img_path)
+        kp1, des1 = sift.detectAndCompute(img1, None)
+        
+        images = Image.objects.all()
+        for image in images:
+            print image.image.url
+	    img2 = cv2.imread('/var/www/graduation_project/match' + image.image.url)
+            kp2, des2 = sift.detectAndCompute(img2, None)
+
+        print kp2, des2
+	return Image.objects.all()[0].image.url
 
 
 class Service(object):
