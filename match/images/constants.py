@@ -7,4 +7,4 @@ class RELATED:
 
 IMAGE_PATH_PREFIX = '/var/www/graduation_project/match'
 
-MIN_MATCH_COUNT = 10
+MIN_MATCH_COUNT = 50
