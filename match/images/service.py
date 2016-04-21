@@ -6,17 +6,18 @@ from images.constants import (
 )
 from matplotlib import pyplot as plt
 from math import sqrt
+from datetime import datetime
 import cv2
 import json
 import numpy as np
 
 
-class ImageService(object):
+FLANN_INDEX_KDTREE = 0
+index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+search_params = dict(checks = 50)
+flann = cv2.FlannBasedMatcher(index_params, search_params)
 
-    FLANN_INDEX_KDTREE = 0
-    index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
-    search_params = dict(checks = 50)
-    flann = cv2.FlannBasedMatcher(index_params, search_params)
+class ImageService(object):
 
     @classmethod
     def get_target(cls, img_path):
@@ -38,8 +39,8 @@ class ImageService(object):
 
             good = []
             for m, n in matches1:
-            if m.queryIdx in d and d[m.queryIdx] == m.trainIdx:
-                good.append(m)
+                if m.queryIdx in d and d[m.queryIdx] == m.trainIdx:
+                    good.append(m)
 
             good = Service.get_max_block(good, kp1, kp2)
             print "Good Matched Point:", len(good)
@@ -73,6 +74,8 @@ class ImageService(object):
 
                 mat = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
 
+                source = dst_img
+                target = img1
                 row = len(source)
                 col = len(source[0])
 
@@ -96,7 +99,7 @@ class ImageService(object):
 	return ''
 
     @classmethod
-    def get_position(i, j, pt1, pt2, time):
+    def get_position(cls, i, j, pt1, pt2, time):
         x = pt2[0] + (i - pt1[0]) * time
         y = pt2[1] + (j - pt1[1]) * time
         return int(x), int(y)
@@ -132,7 +135,7 @@ class Service(object):
                 max_block_temp = []
                 cls.dfs(i, max_block_temp)
                 import copy
-                if len(max_block_temp) > 3:
+                if len(max_block_temp) > 1:
                     max_blocks.append(copy.copy(max_block_temp))
 
         needs = []
