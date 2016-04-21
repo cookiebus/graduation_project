@@ -16,13 +16,15 @@ FLANN_INDEX_KDTREE = 0
 index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
 search_params = dict(checks = 50)
 flann = cv2.FlannBasedMatcher(index_params, search_params)
+sift = cv2.xfeatures2d.SIFT_create()
+
 
 class ImageService(object):
 
     @classmethod
-    def get_max_match(cls, kp1, kp2):
+    def get_max_match(cls, kp1, des1):
         images = Image.objects.all()
-        aim = [None, None, None]
+        aim = [None, None, None, None, '']
 
         for image in images:
             img2 = cv2.imread(IMAGE_PATH_PREFIX + image.image.url)
@@ -41,24 +43,23 @@ class ImageService(object):
                     good.append(m)
 
             good = Service.get_max_block(good, kp1, kp2)
-            if aim[0] is None or len(good) > aim[0]
-                aim = [good, kp1, kp2]
+            if aim[0] is None or len(good) > len(aim[0]):
+                aim = [good[:], kp2[:], des2[:], img2, image.image.url]
 
-        return aim[0], aim[1], aim[2]
+        return aim[0], aim[1], aim[2], aim[3], aim[4]
 
     @classmethod
     def get_target(cls, img_path):
-        sift = cv2.xfeatures2d.SIFT_create()
         img1 = cv2.imread(img_path)
         kp1, des1 = sift.detectAndCompute(img1, None)
         
-        good, kp2, des2 = cls.get_max_match(kp1, des1)
+        good, kp2, des2, img2, image_url = cls.get_max_match(kp1, des1)
 
         if len(good) < 2:
+            print "Not enough matches are found - %d/%d" % (len(good), MIN_MATCH_COUNT)
             return '', '', ''
 
         print "Good Matched Point:", len(good)
-
         src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1, 1, 2)
         dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1, 1, 2)
 
@@ -106,12 +107,7 @@ class ImageService(object):
         # new = np.array(target, dtype=dt)
         result_path = '/media/result/result_%s.jpg' % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         cv2.imwrite(IMAGE_PATH_PREFIX + result_path, target)
-        return image.image.url, path, result_path
-    else:
-        print "Not enough matches are found - %d/%d" % (len(good), MIN_MATCH_COUNT)
-        matchesMask = None
-
-	return '', '', ''
+        return image_url, path, result_path
 
     @classmethod
     def get_position(cls, i, j, pt1, pt2, time):
