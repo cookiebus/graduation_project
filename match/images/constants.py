@@ -1,0 +1,6 @@
+class RELATED:
+    
+    DISJOINTNESS = 0
+    INTERSECTION = 1
+    INCLUSION = 2
+    REVERSE_INCLUSION = 3

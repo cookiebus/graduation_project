@@ -10,7 +10,7 @@ import numpy as np
 class ImageService(object):
 
     @classmethod
-    def get_target(img_path):
+    def get_target(cls, img_path):
         sift = cv2.xfeatures2d.SIFT_create()
         img = cv2.imread(img_path)
         kp, des = sift.detectAndCompute(img, None)
@@ -64,7 +64,6 @@ class Service(object):
                         needs[i] = False
                     else:
                         needs[j] = False
-
 
         print "Number of edges: ", cls.edges_num
 
