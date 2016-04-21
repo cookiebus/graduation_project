@@ -62,36 +62,34 @@ class ImageService(object):
                                    matchesMask = matchesMask, # draw only inliers
                                    flags = 2)
 
-
                 dst_img = cv2.warpPerspective(img1, M, (h * 2, w))
-                path = IMAGE_PATH_PREFIX + '/media/perspective/perspective_%s.jpg' % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                cv2.imwrite(path, dst_img)
+                path = '/media/perspective/perspective_%s.jpg' % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                cv2.imwrite(IMAGE_PATH_PREFIX + path, dst_img)
                 dst_img = cv2.resize(dst_img, None, fx=0.25, fy=0.25, interpolation = cv2.INTER_CUBIC)
                 multiple = Service.get_distance(kp1[good[0].queryIdx].pt, kp1[good[1].queryIdx].pt) / \
                            Service.get_distance(kp2[good[0].trainIdx].pt, kp2[good[1].trainIdx].pt)
 
                 print multiple
 
-                mat = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+                mat = cv2.imread(IMAGE_PATH_PREFIX + path, cv2.IMREAD_GRAYSCALE)
 
                 source = dst_img
-                target = img1
+                target = img2
                 row = len(source)
                 col = len(source[0])
 
                 for i in xrange(row):
                     for j in xrange(col):
-                        x, y = cls.get_position(i, j, kp1[good[0].queryIdx].pt, kp1[good[1].queryIdx].pt, multiple)
-                    
-                    if x < len(target):
-                        if y < len(target[x]):
-                            target[x][y] = source[i][j]
+                        x, y = cls.get_position(i, j, kp1[good[0].queryIdx].pt, kp1[good[1].queryIdx].pt, multiple)                    
+                        if x < len(target):
+                            if y < len(target[x]):
+                                target[x][y] = source[i][j]
 
                 dt = np.dtype('int8')
                 new = np.array(target, dtype=dt)
                 result_path = '/media/result/result_%s.jpg' % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 cv2.imwrite(IMAGE_PATH_PREFIX + result_path, new)
-                return result_path
+                return image.image.url, path, result_path
             else:
                 print "Not enough matches are found - %d/%d" % (len(good), MIN_MATCH_COUNT)
                 matchesMask = None

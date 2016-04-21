@@ -18,5 +18,5 @@ def compute(request):
         dest.write(img_obj.read())
         dest.close()
 
-    link = ImageService.get_target(img_full_path)
+    link1, link2, link3 = ImageService.get_target(img_full_path)
     return render(request, "images/compute.html", locals())
