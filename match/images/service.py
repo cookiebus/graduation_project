@@ -1,5 +1,9 @@
 from images.models import Image
-from images.constants import RELATED
+from images.constants import (
+    RELATED,
+    IMAGE_PATH_PREFIX,
+    MIN_MATCH_COUNT
+)
 from matplotlib import pyplot as plt
 from math import sqrt
 import cv2
@@ -9,6 +13,11 @@ import numpy as np
 
 class ImageService(object):
 
+    FLANN_INDEX_KDTREE = 0
+    index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+    search_params = dict(checks = 50)
+    flann = cv2.FlannBasedMatcher(index_params, search_params)
+
     @classmethod
     def get_target(cls, img_path):
         sift = cv2.xfeatures2d.SIFT_create()
@@ -17,12 +26,80 @@ class ImageService(object):
         
         images = Image.objects.all()
         for image in images:
-            print image.image.url
-	    img2 = cv2.imread('/var/www/graduation_project/match' + image.image.url)
+            img2 = cv2.imread(IMAGE_PATH_PREFIX + image.image.url)
             kp2, des2 = sift.detectAndCompute(img2, None)
 
-        print kp2, des2
-	return Image.objects.all()[0].image.url
+            matches2 = flann.knnMatch(des2, des1, k = 2)
+            matches1 = flann.knnMatch(des1, des2, k = 2)
+
+            d = {}
+            for m, n in matches2:
+                d[m.trainIdx] = m.queryIdx
+
+            good = []
+            for m, n in matches1:
+            if m.queryIdx in d and d[m.queryIdx] == m.trainIdx:
+                good.append(m)
+
+            good = Service.get_max_block(good, kp1, kp2)
+            print "Good Matched Point:", len(good)
+
+            if len(good) > MIN_MATCH_COUNT:
+                src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1, 1, 2)
+                dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1, 1, 2)
+
+                M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+                matchesMask = mask.ravel().tolist()
+
+                h, w, _= img1.shape
+                pts = np.float32([ [0, 0], [0, h-1], [w-1, h-1], [w-1, 0] ]).reshape(-1, 1, 2)
+                dst = cv2.perspectiveTransform(pts, M)
+                img2 = cv2.polylines(img2, [np.int32(dst)], True, 255, 3, cv2.LINE_AA)
+
+                draw_params = dict(matchColor = (0, 255, 0), # draw matches in green color
+                                   singlePointColor = None, 
+                                   matchesMask = matchesMask, # draw only inliers
+                                   flags = 2)
+
+
+                dst_img = cv2.warpPerspective(img1, M, (h * 2, w))
+                path = IMAGE_PATH_PREFIX + '/media/perspective/perspective_%s.jpg' % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                cv2.imwrite(path, dst_img)
+                dst_img = cv2.resize(dst_img, None, fx=0.25, fy=0.25, interpolation = cv2.INTER_CUBIC)
+                multiple = Service.get_distance(kp1[good[0].queryIdx].pt, kp1[good[1].queryIdx].pt) / \
+                           Service.get_distance(kp2[good[0].trainIdx].pt, kp2[good[1].trainIdx].pt)
+
+                print multiple
+
+                mat = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+
+                row = len(source)
+                col = len(source[0])
+
+                for i in xrange(row):
+                    for j in xrange(col):
+                        x, y = cls.get_position(i, j, kp1[good[0].queryIdx].pt, kp1[good[1].queryIdx].pt, multiple)
+                    
+                    if x < len(target):
+                        if y < len(target[x]):
+                            target[x][y] = source[i][j]
+
+                dt = np.dtype('int8')
+                new = np.array(target, dtype=dt)
+                result_path = '/media/result/result_%s.jpg' % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                cv2.imwrite(IMAGE_PATH_PREFIX + result_path, new)
+                return result_path
+            else:
+                print "Not enough matches are found - %d/%d" % (len(good), MIN_MATCH_COUNT)
+                matchesMask = None
+
+	return ''
+
+    @classmethod
+    def get_position(i, j, pt1, pt2, time):
+        x = pt2[0] + (i - pt1[0]) * time
+        y = pt2[1] + (j - pt1[1]) * time
+        return int(x), int(y)
 
 
 class Service(object):
