@@ -80,15 +80,15 @@ class ImageService(object):
 
                 for i in xrange(row):
                     for j in xrange(col):
-                        x, y = cls.get_position(i, j, kp1[good[0].queryIdx].pt, kp1[good[1].queryIdx].pt, multiple)                    
+                        x, y = cls.get_position(i, j, kp1[good[0].queryIdx].pt, kp2[good[0].trainIdx].pt, multiple)                    
                         if x < len(target):
                             if y < len(target[x]):
                                 target[x][y] = source[i][j]
 
-                dt = np.dtype('int8')
-                new = np.array(target, dtype=dt)
+                # dt = np.dtype('int8')
+                # new = np.array(target, dtype=dt)
                 result_path = '/media/result/result_%s.jpg' % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                cv2.imwrite(IMAGE_PATH_PREFIX + result_path, new)
+                cv2.imwrite(IMAGE_PATH_PREFIX + result_path, target)
                 return image.image.url, path, result_path
             else:
                 print "Not enough matches are found - %d/%d" % (len(good), MIN_MATCH_COUNT)
