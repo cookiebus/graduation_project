@@ -32,18 +32,18 @@ class ImageService(object):
 
             matches2 = flann.knnMatch(des2, des1, k = 2)
             matches1 = flann.knnMatch(des1, des2, k = 2)
-
+            print image.image.url, 36
             d = {}
             for m, n in matches2:
                 d[m.trainIdx] = m.queryIdx
 
             good = []
             for m, n in matches1:
-                if m.queryIdx in d and d[m.queryIdx] == m.trainIdx:
-                    good.append(m)
-
+                if m.queryIdx in d:
+                    if d[m.queryIdx] == m.trainIdx:
+                        good.append(m)
             good = Service.get_max_block(good, kp1, kp2)
-            if len(good) > len(aim[0]):
+            if len(good) > aim[0]:
                 aim = (len(good), good[:], kp2[:], des2[:], img2, image.image.url)
 
         return aim
@@ -56,8 +56,8 @@ class ImageService(object):
         _, good, kp2, des2, img2, image_url = cls.get_max_match(kp1, des1)
 
         print "Finish GET MAX MATCH"
-        if len(good) < 2:
-            print "Not enough matches are found - %d/%d" % (len(good), MIN_MATCH_COUNT)
+        if _ == 0 or len(good) < 2:
+            print "Not enough matches are found - %d/%d" % (_, MIN_MATCH_COUNT)
             return '', '', ''
 
         print "Good Matched Point:", len(good)
@@ -90,7 +90,8 @@ class ImageService(object):
         target = img2
         row = len(source)
         col = len(source[0])
-
+        print "source:", row, col
+        print "target:", len(target), len(target[0])
         for i in xrange(row):
             for j in xrange(col):
                 x, y = cls.get_position(i, j, kp1[good[0].queryIdx].pt, kp2[good[0].trainIdx].pt, multiple)
@@ -141,7 +142,7 @@ class Service(object):
                 max_block_temp = []
                 cls.dfs(i, max_block_temp)
                 import copy
-                if len(max_block_temp) > 1:
+                if len(max_block_temp):
                     max_blocks.append(copy.copy(max_block_temp))
 
         needs = []
