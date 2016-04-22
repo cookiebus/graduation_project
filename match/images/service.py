@@ -24,7 +24,7 @@ class ImageService(object):
     @classmethod
     def get_max_match(cls, kp1, des1):
         images = Image.objects.all()
-        aim = [None, None, None, None, '']
+        aim = (0, None, None, None, None, '')
 
         for image in images:
             img2 = cv2.imread(IMAGE_PATH_PREFIX + image.image.url)
@@ -43,18 +43,19 @@ class ImageService(object):
                     good.append(m)
 
             good = Service.get_max_block(good, kp1, kp2)
-            if aim[0] is None or len(good) > len(aim[0]):
-                aim = [good[:], kp2[:], des2[:], img2, image.image.url]
+            if len(good) > len(aim[0]):
+                aim = (len(good), good[:], kp2[:], des2[:], img2, image.image.url)
 
-        return aim[0], aim[1], aim[2], aim[3], aim[4]
+        return aim
 
     @classmethod
     def get_target(cls, img_path):
         img1 = cv2.imread(img_path)
         kp1, des1 = sift.detectAndCompute(img1, None)
         
-        good, kp2, des2, img2, image_url = cls.get_max_match(kp1, des1)
+        _, good, kp2, des2, img2, image_url = cls.get_max_match(kp1, des1)
 
+        print "Finish GET MAX MATCH"
         if len(good) < 2:
             print "Not enough matches are found - %d/%d" % (len(good), MIN_MATCH_COUNT)
             return '', '', ''
@@ -71,12 +72,6 @@ class ImageService(object):
         dst = cv2.perspectiveTransform(pts, M)
         img2 = cv2.polylines(img2, [np.int32(dst)], True, 255, 3, cv2.LINE_AA)
 
-        matches = flann.knnMatch(des1, des2, k = 2)
-        good = []
-        for m, n in matches:
-            if m.distance < n.distance * 0.5:
-                good.append(m)
-
         draw_params = dict(matchColor = (0, 255, 0), # draw matches in green color
                            singlePointColor = None, 
                            matchesMask = matchesMask, # draw only inliers
@@ -85,7 +80,7 @@ class ImageService(object):
         dst_img = cv2.warpPerspective(img1, M, (h * 2, w))
         path = '/media/perspective/perspective_%s.jpg' % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         cv2.imwrite(IMAGE_PATH_PREFIX + path, dst_img)
-        dst_img = cv2.resize(dst_img, None, fx=0.25, fy=0.25, interpolation = cv2.INTER_CUBIC)
+        # dst_img = cv2.resize(dst_img, None, fx=0.25, fy=0.25, interpolation = cv2.INTER_CUBIC)
         multiple = Service.get_distance(kp1[good[0].queryIdx].pt, kp1[good[1].queryIdx].pt) / \
                    Service.get_distance(kp2[good[0].trainIdx].pt, kp2[good[1].trainIdx].pt)
 
