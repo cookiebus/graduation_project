@@ -12,11 +12,6 @@ import json
 import numpy as np
 
 
-FLANN_INDEX_KDTREE = 0
-index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
-search_params = dict(checks = 50)
-flann = cv2.FlannBasedMatcher(index_params, search_params)
-sift = cv2.xfeatures2d.SIFT_create()
 
 
 class ImageService(object):
@@ -27,12 +22,17 @@ class ImageService(object):
         aim = (0, None, None, None, None, '')
 
         for image in images:
+            FLANN_INDEX_KDTREE = 0
+            index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+            search_params = dict(checks = 50)
+            flann = cv2.FlannBasedMatcher(index_params, search_params)
+            sift = cv2.xfeatures2d.SIFT_create()
+            
             img2 = cv2.imread(IMAGE_PATH_PREFIX + image.image.url)
             kp2, des2 = sift.detectAndCompute(img2, None)
 
             matches2 = flann.knnMatch(des2, des1, k = 2)
             matches1 = flann.knnMatch(des1, des2, k = 2)
-            print image.image.url, 36
             d = {}
             for m, n in matches2:
                 d[m.trainIdx] = m.queryIdx
@@ -51,6 +51,7 @@ class ImageService(object):
     @classmethod
     def get_target(cls, img_path):
         img1 = cv2.imread(img_path)
+        sift = cv2.xfeatures2d.SIFT_create()
         kp1, des1 = sift.detectAndCompute(img1, None)
         
         _, good, kp2, des2, img2, image_url = cls.get_max_match(kp1, des1)
@@ -89,8 +90,8 @@ class ImageService(object):
         print "source:", row, col
         print "target:", len(target), len(target[0])
 
-        x_multiple = len(target) * 1.0 / len(source)
-        y_multiple = len(target[0]) * 1.0 / len(source[0])
+        x_multiple = len(source) * 1.0 / len(target)
+        y_multiple = len(source[0]) * 1.0 / len(target[0])
         for i in xrange(row):
             for j in xrange(col):
                 x, y = cls.get_position(i, j, kp1[good[0].queryIdx].pt, kp2[good[0].trainIdx].pt,
