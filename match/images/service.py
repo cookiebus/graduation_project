@@ -85,17 +85,35 @@ class ImageService(object):
 
         source = dst_img
         target = img2
+        sift = cv2.xfeatures2d.SIFT_create()
+
+        # find the keypoints and descriptors with SIFT
+        kp1, des1 = sift.detectAndCompute(source, None)
+        kp2, des2 = sift.detectAndCompute(target, None)
+
+        FLANN_INDEX_KDTREE = 0
+        index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+        search_params = dict(checks = 50)
+
+        flann = cv2.FlannBasedMatcher(index_params, search_params)
+        matches = flann.knnMatch(des1, des2, k = 2)
+        good = []
+        for m, n in matches:
+            if m.distance < n.distance * 0.7:
+                good.append(m)
+        print len(good)
+        multiple = Service.get_distance(kp1[good[0].queryIdx].pt, kp1[good[1].queryIdx].pt) / \
+                   Service.get_distance(kp2[good[0].trainIdx].pt, kp2[good[1].trainIdx].pt)
+
+        print multiple
+
+
         row = len(source)
         col = len(source[0])
-        print "source:", row, col
-        print "target:", len(target), len(target[0])
 
-        x_multiple = len(source) * 1.0 / len(target)
-        y_multiple = len(source[0]) * 1.0 / len(target[0])
         for i in xrange(row):
             for j in xrange(col):
-                x, y = cls.get_position(i, j, kp1[good[0].queryIdx].pt, kp2[good[0].trainIdx].pt,
-                                        x_multiple, y_multiple)
+                x, y = get_position(i, j, kp1[good[0].queryIdx].pt, kp2[good[0].trainIdx].pt, multiple)
                 if x < len(target):
                     if y < len(target[x]):
                         target[x][y] = source[i][j]
@@ -107,9 +125,9 @@ class ImageService(object):
         return image_url, path, result_path
 
     @classmethod
-    def get_position(cls, i, j, pt1, pt2, x_time, y_time):
-        x = pt2[0] + (i - pt1[0]) * x_time
-        y = pt2[1] + (j - pt1[1]) * y_time
+    def get_position(cls, i, j, pt1, pt2, time):
+        x = pt2[0] + (i - pt1[0]) * time
+        y = pt2[1] + (j - pt1[1]) * time
         return int(x), int(y)
 
 
