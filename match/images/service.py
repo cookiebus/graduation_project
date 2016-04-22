@@ -71,7 +71,7 @@ class ImageService(object):
         h, w, _= img1.shape
         pts = np.float32([ [0, 0], [0, h-1], [w-1, h-1], [w-1, 0] ]).reshape(-1, 1, 2)
         dst = cv2.perspectiveTransform(pts, M)
-        img2 = cv2.polylines(img2, [np.int32(dst)], True, 255, 3, cv2.LINE_AA)
+        # img2 = cv2.polylines(img2, [np.int32(dst)], True, 255, 3, cv2.LINE_AA)
 
         draw_params = dict(matchColor = (0, 255, 0), # draw matches in green color
                            singlePointColor = None, 
@@ -99,7 +99,7 @@ class ImageService(object):
         matches = flann.knnMatch(des1, des2, k = 2)
         good = []
         for m, n in matches:
-            if m.distance < n.distance * 0.7:
+            if m.distance < n.distance * 0.5:
                 good.append(m)
         print len(good)
         multiple = Service.get_distance(kp1[good[0].queryIdx].pt, kp1[good[1].queryIdx].pt) / \
@@ -113,7 +113,7 @@ class ImageService(object):
 
         for i in xrange(row):
             for j in xrange(col):
-                x, y = get_position(i, j, kp1[good[0].queryIdx].pt, kp2[good[0].trainIdx].pt, multiple)
+                x, y = cls.get_position(i, j, kp1[good[0].queryIdx].pt, kp2[good[0].trainIdx].pt, multiple)
                 if x < len(target):
                     if y < len(target[x]):
                         target[x][y] = source[i][j]
