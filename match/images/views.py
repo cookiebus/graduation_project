@@ -3,7 +3,7 @@ from django.shortcuts import render
 from datetime import datetime
 from images.models import Image
 from images.service import ImageService
-import os, sys
+import os, sys, gc
 
 # Create your views here.
 def compute(request):
@@ -17,6 +17,9 @@ def compute(request):
         dest = open(img_full_path, 'w')
         dest.write(img_obj.read())
         dest.close()
-
-    link1, link2, link3 = ImageService.get_target(img_full_path)
+    try:
+        gc.collect()
+        link1, link2, link3 = ImageService.get_target(img_full_path)
+    except:
+        pass
     return render(request, "images/compute.html", locals())
