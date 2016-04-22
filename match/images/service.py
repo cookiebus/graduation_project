@@ -12,8 +12,6 @@ import json
 import numpy as np
 
 
-
-
 class ImageService(object):
 
     @classmethod
@@ -106,8 +104,6 @@ class ImageService(object):
                    Service.get_distance(kp2[good[0].trainIdx].pt, kp2[good[1].trainIdx].pt)
 
         print multiple
-
-
         row = len(source)
         col = len(source[0])
 
