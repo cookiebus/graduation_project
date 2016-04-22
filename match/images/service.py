@@ -81,10 +81,6 @@ class ImageService(object):
         path = '/media/perspective/perspective_%s.jpg' % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         cv2.imwrite(IMAGE_PATH_PREFIX + path, dst_img)
         # dst_img = cv2.resize(dst_img, None, fx=0.25, fy=0.25, interpolation = cv2.INTER_CUBIC)
-        multiple = Service.get_distance(kp1[good[0].queryIdx].pt, kp1[good[1].queryIdx].pt) / \
-                   Service.get_distance(kp2[good[0].trainIdx].pt, kp2[good[1].trainIdx].pt)
-
-        print multiple
 
         source = dst_img
         target = img2
@@ -92,9 +88,13 @@ class ImageService(object):
         col = len(source[0])
         print "source:", row, col
         print "target:", len(target), len(target[0])
+
+        x_multiple = len(target) * 1.0 / len(source)
+        y_multiple = len(target[0]) * 1.0 / len(source[0])
         for i in xrange(row):
             for j in xrange(col):
-                x, y = cls.get_position(i, j, kp1[good[0].queryIdx].pt, kp2[good[0].trainIdx].pt, multiple)
+                x, y = cls.get_position(i, j, kp1[good[0].queryIdx].pt, kp2[good[0].trainIdx].pt,
+                                        x_multiple, y_multiple)
                 if x < len(target):
                     if y < len(target[x]):
                         target[x][y] = source[i][j]
@@ -106,9 +106,9 @@ class ImageService(object):
         return image_url, path, result_path
 
     @classmethod
-    def get_position(cls, i, j, pt1, pt2, time):
-        x = pt2[0] + (i - pt1[0]) * time
-        y = pt2[1] + (j - pt1[1]) * time
+    def get_position(cls, i, j, pt1, pt2, x_time, y_time):
+        x = pt2[0] + (i - pt1[0]) * x_time
+        y = pt2[1] + (j - pt1[1]) * y_time
         return int(x), int(y)
 
 
