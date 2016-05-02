@@ -6,6 +6,7 @@ from images.service import ImageService
 import os, sys, gc
 
 # Create your views here.
+@csrf_exempt
 def compute(request):
     if request.method != "POST":
         return render(request, "images/compute.html", locals())
