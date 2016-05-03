@@ -25,4 +25,4 @@ def upload_image(request):
     else:
         file_full_path = ''
 
-    return JsonResponse({"success": True, "image_path": file_full_path})
+    return JsonResponse({"success": True, "image_path": file_name})
