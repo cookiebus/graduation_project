@@ -26,7 +26,7 @@ def upload_image(request):
         dest.write(file_obj.read())
         dest.close()
         m1 = Image.open(file_full_path)
-        m1 = m1.rotate(90)
+        m1 = m1.rotate(-90)
         m1.save(file_full_path)
     else:
         file_full_path = ''
