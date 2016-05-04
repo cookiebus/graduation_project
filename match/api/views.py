@@ -1,10 +1,12 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, HttpResponse
 from django.conf import settings
+from images.service import ImageService
 import json
 import os
 import random
 from PIL import Image
+
 
 # Create your views here.
 def JsonResponse(params):
@@ -28,7 +30,17 @@ def upload_image(request):
         m1.save(file_full_path)
     else:
         file_full_path = ''
+        return JsonResponse({"success": False, "error": "Post image fail"})
 
+    try:
+        gc.collect()
+        link1, link2, link3 = ImageService.get_target(file_full_path)
+        if link1.startswith("/media/"):
+            file_name = link1[len('/media/'):]
+        else:
+            file_name = ''
+        return JsonResponse({"success": True, "image_path": file_name})
+    except:
+        pass
 
-
-    return JsonResponse({"success": True, "image_path": file_name})
+    return JsonResponse({"success": False, "error": "Match image fail"})
