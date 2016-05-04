@@ -35,6 +35,7 @@ def upload_image(request):
     try:
         gc.collect()
         link1, link2, link3 = ImageService.get_target(file_full_path)
+        print link1, link2, link3
         if link1.startswith("/media/"):
             file_name = link1[len('/media/'):]
         else:
