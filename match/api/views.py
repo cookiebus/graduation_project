@@ -5,6 +5,7 @@ from images.service import ImageService
 import json
 import os
 import random
+import gc
 from PIL import Image
 
 
