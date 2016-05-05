@@ -169,7 +169,7 @@ class Service(object):
 
         for i in xrange(len(max_blocks)):
             for j in xrange(i + 1, len(max_blocks)):
-                if not cls.get_both(max_blocks[i], max_blocks[j], matches, kp1, kp2):
+                if not self.get_both(max_blocks[i], max_blocks[j], matches, kp1, kp2):
                     if len(max_blocks[i]) < len(max_blocks[j]):
                         needs[i] = False
                     else:
