@@ -26,6 +26,8 @@ def upload_image(request):
         dest.write(file_obj.read())
         dest.close()
         m1 = Image.open(file_full_path)
+        w, h = m1.size
+        m1 = m1.resize((w / 2, h / 2), Image.ANTIALIAS)
         m1 = m1.rotate(-90)
         m1.save(file_full_path)
     else:
