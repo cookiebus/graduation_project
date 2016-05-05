@@ -59,6 +59,8 @@ class ImageService(object):
             print "Not enough matches are found - %d/%d" % (_, MIN_MATCH_COUNT)
             return '', '', ''
 
+        return image_url, '', ''
+
         print "Good Matched Point:", len(good)
         src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1, 1, 2)
         dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1, 1, 2)
