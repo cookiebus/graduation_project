@@ -131,33 +131,32 @@ class ImageService(object):
 
 class Service(object):
 
-    edges = []
-    node_num = 0
-    color = []
+    def __init__(self):
+        self.edges = []
+        self.node_num = 0
+        self.color = []
 
-    @classmethod
-    def init(cls, n):
+    def init(self, n):
         for i in xrange(n):
-            cls.edges.append([])
-            cls.color.append(False)
+            self.edges.append([])
+            self.color.append(False)
 
-        cls.node_num = n
-        cls.edges_num = 0
+        self.node_num = n
+        self.edges_num = 0
 
-    @classmethod
-    def get_max_block(cls, matches, kp1, kp2):
-        cls.init(len(matches))
+    def get_max_block(self, matches, kp1, kp2):
+        self.init(len(matches))
         for u, match_a in enumerate(matches):
             for v, match_b in enumerate(matches):
-                if v > u and cls.same_related(match_a, match_b, kp1, kp2):
-                    cls.add_edge(u, v)
+                if v > u and self.same_related(match_a, match_b, kp1, kp2):
+                    self.add_edge(u, v)
 
         max_blocks = []
 
-        for i in xrange(cls.node_num):
-            if not cls.color[i]:
+        for i in xrange(self.node_num):
+            if not self.color[i]:
                 max_block_temp = []
-                cls.dfs(i, max_block_temp)
+                self.dfs(i, max_block_temp)
                 import copy
                 if len(max_block_temp):
                     max_blocks.append(copy.copy(max_block_temp))
@@ -175,7 +174,7 @@ class Service(object):
                     else:
                         needs[j] = False
 
-        print "Number of edges: ", cls.edges_num
+        print "Number of edges: ", self.edges_num
 
         results = []
         total = 0
@@ -210,19 +209,17 @@ class Service(object):
 
         return intersection_train == intersection_query
 
-    @classmethod
-    def add_edge(cls, u, v):
-        cls.edges_num += 1
-        cls.edges[u].append(v)
-        cls.edges[v].append(u)
+    def add_edge(self, u, v):
+        self.edges_num += 1
+        self.edges[u].append(v)
+        self.edges[v].append(u)
 
-    @classmethod
-    def dfs(cls, x, max_block):
-        cls.color[x] = True
+    def dfs(self, x, max_block):
+        self.color[x] = True
         max_block.append(x)
-        for y in cls.edges[x]:
-            if not cls.color[y]:
-                cls.dfs(y, max_block)
+        for y in self.edges[x]:
+            if not self.color[y]:
+                self.dfs(y, max_block)
 
     @classmethod
     def same_related(cls, match_a, match_b, kp1, kp2):
