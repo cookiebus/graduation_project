@@ -34,16 +34,14 @@ def upload_image(request):
         file_full_path = ''
         return JsonResponse({"success": False, "error": "Post image fail"})
 
-    try:
-        gc.collect()
-        link1, link2, link3 = ImageService.get_target(file_full_path)
-        print link1, link2, link3
-        if link1.startswith("/media/"):
-            file_name = link1[len('/media/'):]
-        else:
-            file_name = ''
-        return JsonResponse({"success": True, "image_path": file_name})
-    except:
-        pass
 
-    return JsonResponse({"success": False, "error": "Match image fail"})
+    gc.collect()
+    link1, link2, link3 = ImageService.get_target(file_full_path)
+    print link1, link2, link3
+    if link1.startswith("/media/"):
+        file_name = link1[len('/media/'):]
+        print file_name
+        return JsonResponse({"success": True, "image_path": file_name})
+    else:
+        file_name = ''
+        return JsonResponse({"success": False, "error": "Match image fail"})
