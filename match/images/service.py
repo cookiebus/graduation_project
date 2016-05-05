@@ -42,7 +42,7 @@ class ImageService(object):
                         good.append(m)
             good = Service.get_max_block(good, kp1, kp2)
             if len(good) > aim[0]:
-                aim = (len(good), good[:], kp2[:], des2[:], img2, image.image.url)
+                aim = (len(good), good[:], kp2[:], des2[:], img2, image.model_3D.url)
 
         return aim
 
